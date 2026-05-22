@@ -1,0 +1,144 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Reset & base ──────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body, #root {
+  height: 100%;
+  overflow: hidden;
+  background: #060608;
+  color: #c8cdd8;
+  font-family: 'IBM Plex Mono', 'JetBrains Mono', Consolas, monospace;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Scrollbars ────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: #060608; }
+::-webkit-scrollbar-thumb { background: #1f2937; border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: #f56a00; }
+
+/* ── Scanline CRT overlay ──────────────────────────────────────── */
+/* Applied to root via className — keeps it above all content */
+.scanlines::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.04) 2px,
+    rgba(0, 0, 0, 0.04) 4px
+  );
+}
+
+/* ── Panel anatomy ─────────────────────────────────────────────── */
+.panel-header {
+  display: flex;
+  align-items: center;
+  padding: 0.375rem 0.75rem;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #f56a00;
+  border-bottom: 1px solid #1a1d24;
+  background: #0a0b0e;
+  user-select: none;
+  flex-shrink: 0;
+  min-height: 1.875rem;
+}
+
+/* ── Number cells ──────────────────────────────────────────────── */
+.num { font-variant-numeric: tabular-nums; text-align: right; }
+
+/* ── Badge variants ────────────────────────────────────────────── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 5px;
+  border-radius: 2px;
+  font-size: 0.55rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  line-height: 1.4;
+}
+
+/* ── Micro bar ─────────────────────────────────────────────────── */
+.bar-track {
+  flex: 1;
+  height: 3px;
+  background: #1a1d24;
+  border-radius: 99px;
+  overflow: hidden;
+}
+.bar-fill {
+  height: 100%;
+  border-radius: 99px;
+  transition: width 0.4s ease;
+}
+
+/* ── Table row hover ───────────────────────────────────────────── */
+.trow {
+  border-bottom: 1px solid #0d0f12;
+  transition: background 0.08s;
+  cursor: default;
+}
+.trow:hover { background: #0d0f14; }
+
+/* ── Input / select reset ──────────────────────────────────────── */
+.term-input {
+  background: #0c0d10;
+  border: 1px solid #1a1d24;
+  color: #f56a00;
+  font-family: inherit;
+  font-size: 0.7rem;
+  padding: 3px 8px;
+  border-radius: 2px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.term-input:focus { border-color: rgba(245, 106, 0, 0.4); }
+
+/* ── Skeleton shimmer ──────────────────────────────────────────── */
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg, #0c0d10 25%, #14161b 50%, #0c0d10 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+  border-radius: 2px;
+}
+
+/* ── Ticker tape ───────────────────────────────────────────────── */
+@keyframes ticker {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.ticker-wrap { overflow: hidden; flex: 1; display: flex; align-items: center; }
+.ticker-inner { display: flex; white-space: nowrap; animation: ticker 55s linear infinite; }
+
+/* ── Glow text ─────────────────────────────────────────────────── */
+.glow-orange { text-shadow: 0 0 10px rgba(245, 106, 0, 0.5); }
+.glow-green  { text-shadow: 0 0 8px  rgba(22, 201, 110, 0.4); }
+.glow-red    { text-shadow: 0 0 8px  rgba(240, 60, 60, 0.4); }
+
+/* ── Action colors ─────────────────────────────────────────────── */
+.action-buy  { color: #16c96e; background: rgba(22,201,110,0.12); }
+.action-add  { color: #5ee89a; background: rgba(94,232,154,0.10); }
+.action-hold { color: #e6b800; background: rgba(230,184,0,0.10); }
+.action-trim { color: #f09030; background: rgba(240,144,48,0.10); }
+.action-sell { color: #f03c3c; background: rgba(240,60,60,0.12); }
+
+.signal-new  { color: #3b8eff; background: rgba(59,142,255,0.10); }
+.signal-inc  { color: #16c96e; background: rgba(22,201,110,0.10); }
+.signal-dec  { color: #f09030; background: rgba(240,144,48,0.10); }
+.signal-exit { color: #f03c3c; background: rgba(240,60,60,0.10); }
