@@ -66,7 +66,10 @@ def parse_infotable(xml_text: str) -> list[RawHolding]:
         put_call = pc_elem.text.strip() if pc_elem is not None and pc_elem.text else None
 
         try:
-            value = int(re.sub(r"[^\d]", "", value_str))
+            # SEC 13F X0202 format (in use since Q3 2023) reports value in raw dollars.
+            # Divide by 1000 to normalise to the historical "thousands" unit used
+            # throughout the rest of the codebase.
+            value = int(re.sub(r"[^\d]", "", value_str)) // 1000
         except ValueError:
             value = 0
 
