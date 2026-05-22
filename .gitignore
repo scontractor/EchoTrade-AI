@@ -15,6 +15,12 @@ build/
 # Secrets
 .env
 
+# Local databases (Form 4 ingestion cache, etc.)
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+
 # Logs
 logs
 *.log
