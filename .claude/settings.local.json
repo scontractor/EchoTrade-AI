@@ -1,7 +1,35 @@
 {
   "permissions": {
     "allow": [
-      "Bash(python -c ' *)"
+      "Bash(python -c ' *)",
+      "Read(//c/c/Users/k2584081/Docsesh KCL/GitHub_personal/EchoTrade-AI/app/signals/**)",
+      "Read(//c/c/Users/k2584081/Docsesh KCL/GitHub_personal/EchoTrade-AI/app/**)",
+      "Bash(npm install *)",
+      "Bash(npx tsc *)",
+      "Bash(pip show *)",
+      "Bash(npm list *)",
+      "Bash(python -c \"import fastapi, uvicorn, httpx, pydantic, openai, textblob, feedparser, tenacity, pandas, sqlalchemy, aiosqlite; print\\('all core deps OK'\\)\")",
+      "Bash(pip install *)",
+      "Bash(python -c \"from app.main import app; print\\('app loaded OK'\\)\")",
+      "Bash(curl -s http://localhost:8000/investors)",
+      "Bash(python -m json.tool)",
+      "Bash(curl -s \"http://localhost:8000/investors/berkshire/snapshot\")",
+      "Bash(curl *)",
+      "Bash(python -c \"import json,sys; d=json.load\\(sys.stdin\\); r=d['filings']['recent']; forms=r['form']; accs=r['accessionNumber']; dates=r['filingDate']; [\\(print\\(accs[i], forms[i], dates[i]\\)\\) for i in range\\(len\\(forms\\)\\) if forms[i] in \\('13F-HR','13F-HR/A'\\)][:4]\")",
+      "PowerShell(Get-Process *)",
+      "Bash(python -c)",
+      "Bash(node -e \"require\\('playwright'\\)\")",
+      "Bash(python -c \"import playwright\")",
+      "Bash(python -m playwright install chromium)",
+      "Bash(del screenshot_*.png)",
+      "Bash(Remove-Item \"C:\\\\Users\\\\k2584081\\\\Docsesh KCL\\\\GitHub_personal\\\\EchoTrade-AI\\\\screenshot_*.png\" -ErrorAction SilentlyContinue)",
+      "Bash(Write-Output \"cleaned\")",
+      "Bash(ls frontend/.gitignore)",
+      "Bash(cat frontend/.gitignore)",
+      "Bash(git status *)",
+      "Bash(git check-ignore *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)"
     ]
   }
 }
