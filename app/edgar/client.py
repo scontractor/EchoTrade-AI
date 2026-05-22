@@ -150,24 +150,32 @@ class EDGARClient:
         return results
 
     async def _find_infotable_url(self, cik: str, accession_number: str) -> Optional[str]:
+        import re as _re
         cik_int = int(cik)
         acc_clean = accession_number.replace("-", "")
-        index_url = f"https://www.sec.gov/Archives/edgar/data/{cik_int}/{acc_clean}/{accession_number}-index.json"
+        base = f"{EDGAR_ARCHIVES}/{cik_int}/{acc_clean}"
 
+        # Parse the HTML index — SEC no longer exposes a JSON index for recent filings.
+        # The infotable has type "INFORMATION TABLE" with a numeric-named .xml file.
+        index_url = f"{base}/{accession_number}-index.html"
         try:
             resp = await self._http.get(index_url, timeout=10)
             if resp.status_code == 200:
-                for item in resp.json().get("directory", {}).get("item", []):
-                    name: str = item.get("name", "")
-                    doc_type: str = item.get("type", "").upper()
-                    if "infotable" in name.lower() or doc_type == "INFORMATION TABLE":
-                        return f"{EDGAR_ARCHIVES}/{cik_int}/{acc_clean}/{name}"
+                html = resp.text
+                rows = _re.findall(r"<tr[^>]*>(.*?)</tr>", html, _re.S | _re.I)
+                for row in rows:
+                    cells = _re.findall(r"<td[^>]*>(.*?)</td>", row, _re.S | _re.I)
+                    clean = [_re.sub(r"<[^>]+>", "", c).strip() for c in cells]
+                    if len(clean) >= 4 and "INFORMATION TABLE" in clean[3].upper():
+                        fname = _re.sub(r"<[^>]+>", "", cells[2]).strip()
+                        if fname.endswith(".xml"):
+                            return f"{base}/{fname}"
         except Exception as exc:
-            logger.debug("Index JSON fetch failed: %s", exc)
+            logger.debug("Index HTML fetch failed: %s", exc)
 
-        # Fallback: try known filenames
+        # Fallback: try historic known filenames
         for fname in ("infotable.xml", "form13fInfoTable.xml", "informationtable.xml"):
-            url = f"{EDGAR_ARCHIVES}/{cik_int}/{acc_clean}/{fname}"
+            url = f"{base}/{fname}"
             try:
                 head = await self._http.head(url, timeout=5)
                 if head.status_code == 200:
