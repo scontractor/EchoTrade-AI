@@ -202,11 +202,13 @@ class Form4Client:
             results = []
             for hit in hits[:50]:  # Cap at 50 most recent
                 src = hit.get("_source", {})
+                # EFTS uses "adsh" (not "accession_no") and "ciks" list (not "entity_id")
+                ciks = src.get("ciks", [])
                 results.append({
-                    "accession_number": src.get("accession_no", ""),
+                    "accession_number": src.get("adsh", ""),
                     "filing_date": src.get("file_date", ""),
-                    "entity_name": src.get("entity_name", ""),
-                    "cik": src.get("entity_id", ""),
+                    "entity_name": src.get("display_names", [""])[0],
+                    "cik": ciks[0].lstrip("0") if ciks else "",
                 })
             return results
         except Exception as exc:
@@ -214,29 +216,33 @@ class Form4Client:
             return []
 
     def _fetch_form4_xml(self, cik: str, accession_number: str) -> Optional[str]:
+        import re as _re
         cik_int = int(cik) if cik.isdigit() else cik
         acc_clean = accession_number.replace("-", "")
+        base = f"{ARCHIVES}/{cik_int}/{acc_clean}"
 
-        # Try the primary document (Form 4 XML is typically the primary doc)
-        index_url = f"{ARCHIVES}/{cik_int}/{acc_clean}/{accession_number}-index.json"
+        # Parse the HTML index — SEC no longer exposes a JSON index for recent filings.
+        index_url = f"{base}/{accession_number}-index.html"
         try:
             resp = self._http.get(index_url, timeout=8)
             if resp.status_code == 200:
-                for item in resp.json().get("directory", {}).get("item", []):
-                    name: str = item.get("name", "")
-                    doc_type: str = item.get("type", "").upper()
-                    if doc_type in ("4", "4/A") or name.lower().endswith(".xml"):
-                        xml_url = f"{ARCHIVES}/{cik_int}/{acc_clean}/{name}"
-                        xml_resp = self._http.get(xml_url, timeout=10)
-                        if xml_resp.status_code == 200:
-                            return xml_resp.text
+                rows = _re.findall(r"<tr[^>]*>(.*?)</tr>", resp.text, _re.S | _re.I)
+                for row in rows:
+                    cells = _re.findall(r"<td[^>]*>(.*?)</td>", row, _re.S | _re.I)
+                    if len(cells) >= 4:
+                        doc_type = _re.sub(r"<[^>]+>", "", cells[3]).strip().upper()
+                        fname = _re.sub(r"<[^>]+>", "", cells[2]).strip()
+                        if doc_type in ("4", "4/A") and fname.endswith(".xml"):
+                            r = self._http.get(f"{base}/{fname}", timeout=10)
+                            if r.status_code == 200:
+                                return r.text
         except Exception as exc:
-            logger.debug("Form4 XML fetch failed %s: %s", accession_number, exc)
+            logger.debug("Form4 HTML index fetch failed %s: %s", accession_number, exc)
 
         # Fallback: try common filename patterns
-        for fname in (f"{accession_number}.xml", "primary-document.xml"):
+        for fname in ("form4.xml", f"{accession_number}.xml", "primary-document.xml"):
             try:
-                r = self._http.get(f"{ARCHIVES}/{cik_int}/{acc_clean}/{fname}", timeout=8)
+                r = self._http.get(f"{base}/{fname}", timeout=8)
                 if r.status_code == 200:
                     return r.text
             except Exception:
