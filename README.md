@@ -10,7 +10,7 @@ EchoTrade AI is an AI Strategy Cloner that:
 1. **Ingests** SEC EDGAR 13F filings for 10 celebrity investors (Buffett, Ackman, Cathie Wood, Druckenmiller, and more)
 2. **Diffs** holdings quarter-over-quarter to surface new/exited/increased/decreased positions
 3. **Scores** sentiment per position using real-time news via Yahoo Finance RSS + TextBlob
-4. **Generates** institutional-quality trading signals via Claude claude-sonnet-4-6 with full rationale
+4. **Generates** institutional-quality trading signals via a local LLM (Ollama by default, any OpenAI-compatible backend) with full rationale
 5. **Clones** any portfolio: given $X capital, returns a proportional allocation table
 
 ---
@@ -29,7 +29,7 @@ app/
 ├── sentiment/
 │   └── analyzer.py     # RSS news fetch + TextBlob sentiment scoring
 ├── signals/
-│   └── analyst.py      # Claude claude-sonnet-4-6 with prompt caching
+│   └── analyst.py      # OpenAI-compatible client (Ollama by default — see docs/adr/0001)
 ├── config.py           # Pydantic-settings
 └── main.py             # FastAPI app + all routes
 ```
@@ -84,7 +84,7 @@ All backends use the same OpenAI-compatible `/v1/chat/completions` interface.
 | `GET` | `/investors` | List all tracked celebrity investors |
 | `GET` | `/investors/{id}/snapshot` | Latest 13F holdings (top 25) |
 | `GET` | `/investors/{id}/diff` | Q/Q portfolio changes |
-| `GET` | `/investors/{id}/signals` | AI trading signals (Claude) |
+| `GET` | `/investors/{id}/signals` | AI trading signals (local LLM via Ollama) |
 | `GET` | `/investors/{id}/clone?capital=50000` | Proportional clone allocation |
 
 **Investor IDs:** `berkshire` · `ark_invest` · `pershing_square` · `third_point` · `appaloosa` · `soros_fund` · `baupost` · `tiger_global` · `druckenmiller` · `renaissance`
