@@ -14,7 +14,7 @@ flowchart TD
 
     subgraph Frontend["Frontend — React 18 + Vite + Tailwind + TypeScript (local :5173)"]
         UI[Bloomberg-style terminal UI<br/>Portfolio · Diff · Clone · Form 4 · AI Signals tabs]
-        TopBar["Ticker tape + status pills<br/>(MOCK — static prices, fake LIVE/Ollama lights)"]
+        TopBar["Ticker tape + status pills<br/>(DEMO PRICES — static, clearly labelled)"]
     end
 
     subgraph Backend["Backend — FastAPI + httpx + SQLAlchemy (local :8000)"]
@@ -69,7 +69,7 @@ flowchart TD
 - **Ready to verify:** AI Signals pipeline is wired and error-handled; Groq free
   tier confirmed as a working backend (set LLM_BASE_URL + LLM_API_KEY in .env).
   End-to-end verification pending first live run.
-- **Mock / cosmetic:** ticker tape (static prices), LIVE + OLLAMA status lights.
+- **Static / labelled:** ticker tape shows demo prices, clearly marked "DEMO PRICES"; status pills say DEMO + AI (not LIVE/OLLAMA).
 - **Not present:** auth, user persistence, real-time prices, deployment,
   and 13F caching (13F is re-fetched from SEC on every request — a known gap).
 
