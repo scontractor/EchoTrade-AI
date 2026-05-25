@@ -8,12 +8,13 @@ ticker symbols using SEC's free company_tickers_exchange.json lookup.
 import asyncio
 import logging
 import re
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from typing import Optional
 
 import httpx
 from tenacity import retry, stop_after_attempt, wait_exponential
 
+from .cache import FilingCache
 from .parser import RawHolding, parse_infotable
 
 logger = logging.getLogger(__name__)
@@ -118,6 +119,7 @@ class EDGARClient:
     def __init__(self):
         self._http = httpx.AsyncClient(headers=HEADERS, timeout=30, follow_redirects=True)
         self._resolver = _TickerResolver()
+        self._cache = FilingCache()
 
     async def _ensure_resolver(self) -> None:
         await self._resolver.load(self._http)
@@ -186,6 +188,18 @@ class EDGARClient:
         return None
 
     async def get_snapshot(self, cik: str, investor_name: str, filing: FilingMeta) -> Optional[FilingSnapshot]:
+        cached = self._cache.get(filing.accession_number)
+        if cached:
+            logger.debug("Cache hit: %s", filing.accession_number)
+            return FilingSnapshot(
+                cik=cached["cik"],
+                investor_name=cached["investor_name"],
+                period_of_report=cached["period_of_report"],
+                filing_date=cached["filing_date"],
+                accession_number=cached["accession_number"],
+                holdings=[Holding(**h) for h in cached["holdings"]],
+            )
+
         await self._ensure_resolver()
 
         xml_url = await self._find_infotable_url(cik, filing.accession_number)
@@ -210,7 +224,7 @@ class EDGARClient:
             for r in raw_holdings
         ]
 
-        return FilingSnapshot(
+        snapshot = FilingSnapshot(
             cik=cik,
             investor_name=investor_name,
             period_of_report=filing.report_date,
@@ -218,6 +232,8 @@ class EDGARClient:
             accession_number=filing.accession_number,
             holdings=holdings,
         )
+        self._cache.put(asdict(snapshot))
+        return snapshot
 
     async def get_two_latest_snapshots(
         self, cik: str, investor_name: str

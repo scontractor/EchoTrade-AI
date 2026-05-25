@@ -26,7 +26,7 @@ flowchart TD
         Signals[signals/ — bundles diff+sentiment → LLM → BUY/HOLD/SELL]
     end
 
-    DB[("SQLite — echotrade.db<br/>caches Form 4 trades only")]
+    DB[("SQLite — echotrade.db<br/>Form 4 trades + 13F snapshots")]
 
     subgraph External["External services"]
         SEC["SEC EDGAR<br/>13F + Form 4 filings"]
@@ -40,9 +40,10 @@ flowchart TD
     API --> Portfolio
     API --> Insiders
     API --> Signals
-    Edgar -->|fetches filings every request<br/>NO 13F cache| SEC
+    Edgar -->|checks cache first; fetches XML on miss| SEC
     Insiders -->|fetches + persists| SEC
     Insiders -->|read/write| DB
+    Edgar -->|read/write| DB
     Sentiment -->|scrapes headlines| Yahoo
     Signals -->|inference via LLM_BASE_URL| LLM
     Signals --> Sentiment
@@ -66,12 +67,10 @@ flowchart TD
   parser + scorer (role/value-weighted, cluster detection), full React UI wired
   across all 5 tabs, SQLite cache for Form 4.
 - **Real but crude:** sentiment (TextBlob is keyword-based, not finance-aware).
-- **Ready to verify:** AI Signals pipeline is wired and error-handled; Groq free
-  tier confirmed as a working backend (set LLM_BASE_URL + LLM_API_KEY in .env).
-  End-to-end verification pending first live run.
+- **AI Signals:** verified end-to-end via Groq (`llama-3.3-70b-versatile`). Configure
+  via `.env` — see `.env.example` for Groq and Ollama options.
 - **Static / labelled:** ticker tape shows demo prices, clearly marked "DEMO PRICES"; status pills say DEMO + AI (not LIVE/OLLAMA).
-- **Not present:** auth, user persistence, real-time prices, deployment,
-  and 13F caching (13F is re-fetched from SEC on every request — a known gap).
+- **Not present:** auth, user persistence, real-time prices, deployment.
 
 ## Stack (actual)
 - **Backend:** Python 3.13, FastAPI, httpx (async), SQLAlchemy 2.0, SQLite,
@@ -82,4 +81,4 @@ flowchart TD
 - **Persistence:** ~5MB SQLite file (gitignored). **Deployment:** none yet.
 - **Tests:** pytest, `tests/test_parse_response.py` (6 cases, passing).
 
-_Last updated: PR #1 merged — configurable LLM backend, first tests, error handling._
+_Last updated: 13F snapshot cache added (filing_snapshots table, transparent read-through)._
