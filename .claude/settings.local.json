@@ -14,7 +14,6 @@
       "Bash(curl -s http://localhost:8000/investors)",
       "Bash(python -m json.tool)",
       "Bash(curl -s \"http://localhost:8000/investors/berkshire/snapshot\")",
-      "Bash(curl *)",
       "Bash(python -c \"import json,sys; d=json.load\\(sys.stdin\\); r=d['filings']['recent']; forms=r['form']; accs=r['accessionNumber']; dates=r['filingDate']; [\\(print\\(accs[i], forms[i], dates[i]\\)\\) for i in range\\(len\\(forms\\)\\) if forms[i] in \\('13F-HR','13F-HR/A'\\)][:4]\")",
       "PowerShell(Get-Process *)",
       "Bash(python -c)",
