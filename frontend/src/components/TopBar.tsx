@@ -58,18 +58,21 @@ export default function TopBar({ investors }: Props) {
       {/* Status indicators */}
       <div className="flex items-center gap-3 px-3 border-r border-t-border flex-shrink-0">
         <span className="flex items-center gap-1.5">
-          <Activity size={9} className="text-t-green animate-pulse" />
-          <span className="text-t-green text-2xs font-bold tracking-wider">LIVE</span>
+          <Activity size={9} className="text-t-orange" />
+          <span className="text-t-orange text-2xs font-bold tracking-wider">DEMO</span>
         </span>
         <span className="flex items-center gap-1.5">
           <Cpu size={9} className="text-t-muted" />
-          <span className="text-t-muted text-2xs tracking-wider">OLLAMA</span>
+          <span className="text-t-muted text-2xs tracking-wider">AI</span>
         </span>
       </div>
 
-      {/* Ticker tape */}
+      {/* Ticker tape — static demo prices, not a live feed */}
       <div className="ticker-wrap flex-1 mx-2 overflow-hidden">
         <div className="ticker-inner">
+          <span className="inline-flex items-center mr-6 text-2xs text-t-muted tracking-wider flex-shrink-0">
+            DEMO PRICES
+          </span>
           {[...TAPE_ITEMS, ...TAPE_ITEMS].map((t, i) => (
             <span key={i} className="inline-flex items-center gap-1.5 mr-8 text-2xs">
               <span className="text-t-orange font-bold tracking-wide">{t.sym}</span>
