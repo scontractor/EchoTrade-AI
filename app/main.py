@@ -161,7 +161,14 @@ async def get_signals(investor_id: str):
 
     sentiment = analyze_tickers(tickers_for_sentiment) if tickers_for_sentiment else {}
 
-    return analyst.analyze(diff, current, sentiment)
+    try:
+        return analyst.analyze(diff, current, sentiment)
+    except ValueError as exc:
+        logger.warning("LLM returned unparseable output: %s", exc)
+        raise HTTPException(502, "Model returned unparseable output. Try again or switch to a larger model.")
+    except Exception as exc:
+        logger.error("LLM backend error: %s", exc)
+        raise HTTPException(502, f"LLM backend error: {exc}")
 
 
 @app.get("/investors/{investor_id}/clone", response_model=CloneOut)
