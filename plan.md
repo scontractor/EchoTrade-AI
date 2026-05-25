@@ -23,8 +23,9 @@
 ✅ **Configured via `.env` only** — `.env.example` has the Groq block ready to
    uncomment. Zero code changes needed to switch backends.
 
-- [ ] **Run the endpoint end-to-end** for at least 2 investors — confirm real
-      `PortfolioAnalysis` output, not an error. *(Groq key obtained; run pending.)*
+✅ **Run the endpoint end-to-end** — verified live against Berkshire and ARK Invest.
+   Real `PortfolioAnalysis` returned (15 signals, executive summary, risk factors).
+   Model: `llama-3.3-70b-versatile` via Groq. Period: Q4 2025 → Q1 2026.
 
 ✅ **Three code issues fixed** — 502 error handling, stale Anthropic docstrings,
    `response_format` confirmed supported on Groq.
