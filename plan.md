@@ -12,11 +12,13 @@ makes the existing app honest, solid, and slightly more shippable — chosen bec
 it's small, high-value, and good for learning the codebase.
 
 ## Outcomes (definition of done)
-- [ ] **README fixed:** remove stale "Claude" references; state we use Ollama /
-      OpenAI-compatible local models (matches CLAUDE.md and the actual code).
-- [ ] **Docs committed:** the ADRs (`docs/decisions/0001–0004`), `docs/architecture.md`,
-      `ROADMAP.md`, and this `plan.md` are committed into the repo (they currently
-      exist but were never committed — `git log` confirms).
+
+✅ **README fixed** — stale "Claude" references removed; Ollama / OpenAI-compatible
+   framing in place.
+
+✅ **Docs committed** — ADRs (`docs/adr/0001–0004`), `docs/architecture.md`,
+   `ROADMAP.md`, and `plan.md` are all in the repo.
+
 - [ ] **Ollama verified end-to-end:** confirm AI Signals actually returns results with
       a local model running; if it works, note the exact setup in README; if it
       doesn't, document what's needed. (Currently built-but-unverified.)
@@ -31,11 +33,10 @@ it's small, high-value, and good for learning the codebase.
   separate roadmap items. This chunk is correctness + honesty + first tests only.
 
 ## Suggested approach (Claude: explain as you go — I'm a PM learning this)
-1. Start with the README fix and committing docs (fast wins, low risk).
-2. Then verify Ollama — this de-risks our headline AI feature.
-3. Then write the first tests on the pure-logic modules (diff, scorer). Explain what
+1. Verify Ollama end-to-end — this de-risks the headline AI feature.
+2. Write the first tests on the pure-logic modules (diff, scorer). Explain what
    a test is and why these modules are the easiest, highest-value place to start.
-4. UI honesty labels last (cosmetic but matters for trust).
+3. UI honesty labels last (cosmetic but matters for trust).
 
 ## Open questions for me
 - Is Ollama actually installed and running on your machine? (Decides whether step 2
