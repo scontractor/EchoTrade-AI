@@ -25,24 +25,22 @@ care about, and backtest your own portfolio against theirs.
 - Form 4 insider pipeline: parse + role/value-weighted scorer + cluster detection,
   persisted to SQLite.
 - React/Vite terminal UI wired across all 5 tabs.
-- FastAPI backend with 8 routes; Ollama-based AI signals (OSS, per CLAUDE.md).
-
-## 🔧 IMMEDIATE — correctness & hygiene (do first; small, high-value, good learning)
-- Fix README drift ("Claude" → "Ollama / OpenAI-compatible").
-- Commit the docs (ADRs, architecture.md, ROADMAP) into the repo so they're real.
-- **Verify Ollama end-to-end** — confirm AI Signals actually works, or document the
-  setup step. (It's currently built-but-unverified.)
-- Add a first test or two (the quality bar in CLAUDE.md asks for this; none exist yet).
-- Make the mock TopBar honest: label prices "demo" until real ones land.
+- FastAPI backend with 8 routes; OSS-LLM AI signals (per CLAUDE.md).
+- Docs reconciled to reality: ADRs 0001–0005, architecture.md, ROADMAP committed.
+- README drift fixed; `.env.example` documents Groq + Ollama options.
+- **AI Signals verified end-to-end** — Groq free tier (`llama-3.3-70b-versatile`);
+  502 error handling on unparseable model output; stale Anthropic docstrings removed.
+- **First tests** — 9 pytest cases (`_parse_response` + `FilingCache`), all passing.
+- **Honest UI labels** — DEMO/AI status pills, "DEMO PRICES" ticker tape prefix.
+- **13F snapshot cache** — transparent read-through, keyed on accession_number,
+  `filing_snapshots` table in `echotrade.db`. Repeat requests <100ms (ADR 0005).
 
 ## NEXT — pick the order based on learn-vs-ship mood
 
 ### A. Make it solid (learning-heavy)
-- **13F caching:** stop re-fetching SEC every request — cache snapshots (SQLite is
-  fine). Form 4 already does this; mirror the pattern. Big quality + reliability win,
-  and a great lesson in caching/persistence.
-- Replace mock ticker tape with a **real (likely delayed) price feed** (Phase 2 idea).
-  Label delayed vs live honestly.
+- Replace mock ticker tape with a **real (likely delayed) price feed** (e.g. yfinance).
+  Removes the last "dishonest" element; teaches external data integration.
+- Add more tests on the pure-logic modules (diff engine, Form 4 scorer).
 
 ### B. Make it shippable (shipping-heavy)
 - **Deploy a read-only public demo** (no user data, so no auth needed yet) — frontend
@@ -63,7 +61,47 @@ care about, and backtest your own portfolio against theirs.
 
 ---
 
+## 🎓 Learning tracks (which work teaches which skill)
+
+> I'm a PM learning engineering by building this. Maps roadmap items to the skill each
+> teaches, so learning goals sit alongside build goals. When working a tagged item,
+> Claude explains it in the relevant vocabulary as we go (see CLAUDE.md teaching mode).
+> Tip: a `plan.md` chunk can add a one-line "Learning focus:" pointer back to here.
+
+### ETL / data pipelines — *primary focus; already partly built*
+- **Already in the code:** Extract = `edgar/client.py` (fetch SEC XML); Transform =
+  `edgar/parser.py` + CUSIP→ticker resolver + X0202 unit normalization (ADR 0003);
+  Load = `insiders/` persisting Form 4 to SQLite.
+- **Already lived:** schema drift — ADR 0003 records 3 SEC source changes that broke
+  the pipeline. The central real-world ETL lesson.
+- **Already shipped:** 13F caching = the missing "Load" stage (ADR 0005, PR #3).
+- **Next lessons (in order):** incremental/idempotent ingest (only fetch unseen
+  filings) → scheduled ingestion (nightly job vs on-request) → data validation
+  before load (would auto-catch the $263T bug).
+- **Out of scope:** warehouse/orchestration ETL (dbt, Airflow, Spark). Same concepts,
+  different tools — a separate future project if wanted.
+
+### Deployment & CI/CD
+- Read-only demo deploy (frontend → Vercel, FastAPI → Python host) teaches build/
+  deploy, env config, the frontend/backend split (ADR 0004). Auto-deploy + PR previews
+  teach CI/CD.
+
+### Auth & security
+- Supabase auth + SQLite→Postgres migration (ADR 0002) teaches OAuth, sessions, 2FA,
+  and closing an open API — triggered when we add multi-user.
+
+### Testing
+- Tests on pure-logic modules (diff engine, Form 4 scorer) teach test structure and
+  happy-path vs edge cases. Threads through every chunk.
+
+### LLM application engineering
+- Signals verification + graceful fallback (shipped PR #1) taught structured-output
+  prompting, OpenAI-compatible adapters, handling unreliable model output.
+- LLM-as-a-judge (backlog) teaches eval/scoring of AI outputs.
+
+---
+
 ## How to use this with plan.md
-1. Pick the next item here. 2. Spar in a side chat → distill into `plan.md`.
+1. Pick the next item. 2. Spar in a side chat → distill into `plan.md`.
 3. Hand `plan.md` to Claude Code in Plan Mode. 4. Branch → PR → review → merge.
-5. Update this file + architecture.md, write an ADR if it was a real decision.
+5. Update this file + architecture.md; write an ADR if it was a real decision.

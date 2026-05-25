@@ -41,3 +41,44 @@ Supabase auth + SQLite → Postgres migration. Only makes sense once there's
 something worth protecting behind a login.
 
 Spar in a side chat → distill into a new plan.md → branch → PR.
+
+
+# 🎓 Learning tracks (which work teaches which skill)
+ 
+> I'm a PM learning engineering by building this. This maps roadmap items to the
+> skill each one teaches, so learning goals are visible alongside build goals.
+> When working an item tagged here, Claude should explain it in the relevant
+> vocabulary as we go (see CLAUDE.md teaching mode).
+ 
+### ETL / data pipelines
+*The most transferable skill here — and already partly built.*
+- **Already learned (exists in code):** Extract = `edgar/client.py` (fetch SEC XML);
+  Transform = `edgar/parser.py` + CUSIP→ticker resolver + X0202 unit normalization
+  (ADR 0003); Load = `insiders/` persisting Form 4 to SQLite.
+- **Already lived:** schema drift — ADR 0003 documents 3 SEC source changes that
+  broke the pipeline. This is the central real-world ETL lesson.
+- **Next ETL lessons (tag these as learning):**
+  - **13F caching** = completing the missing "Load" stage (13F currently re-extracts
+    every request; Form 4 already loads-and-reuses). Mirror the Form 4 pattern.
+  - **Incremental / idempotent ingest** = only fetch filings not already stored,
+    so re-runs don't duplicate or re-pull everything.
+  - **Scheduled ingestion** = move extraction from on-request to a scheduled job
+    (e.g. nightly pull of new filings) — classic production ETL shape.
+  - **Data validation** = sanity-check transformed data before load (would have
+    auto-caught the $263T bug).
+- **Out of scope here:** warehouse/orchestration ETL (dbt, Airflow, Spark, Snowflake).
+  Same concepts, different tools — a separate future project if wanted.
+### Deployment & CI/CD
+- **Read-only demo deploy** (frontend → Vercel, FastAPI → Python host) teaches
+  build/deploy, environment config, and the frontend/backend split (ADR 0004).
+- Adding auto-deploy-on-merge + PR previews teaches CI/CD pipelines.
+### Auth & security
+- **Supabase auth + SQLite→Postgres migration** (ADR 0002) teaches OAuth, sessions,
+  2FA, and closing an open API — triggered when we add multi-user.
+### Testing
+- **First tests on pure-logic modules** (diff engine, Form 4 scorer) teach test
+  structure, happy-path vs edge cases. Threads through every chunk going forward.
+### LLM application engineering
+- **Signals verification + graceful fallback** teaches structured-output prompting,
+  OpenAI-compatible adapters, and handling unreliable model output.
+- **LLM-as-a-judge** (backlog) teaches eval/scoring of AI outputs.
