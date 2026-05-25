@@ -132,7 +132,7 @@ Build things people AND agents actually want to use:
 
 ### Record architectural decisions (ADRs)
 - When we make a significant, hard-to-reverse, or non-obvious technical decision,
-  record it as an **ADR** (Architecture Decision Record) in `docs/decisions/`.
+  record it as an **ADR** (Architecture Decision Record) in `docs/adr/`.
 - One file per decision, numbered: `0001-short-title.md`, `0002-...`, etc.
 - Keep each ADR short and use this structure:
   - **Title** — the decision in a phrase.
@@ -140,7 +140,7 @@ Build things people AND agents actually want to use:
   - **Context** — what problem/constraint forced a choice.
   - **Decision** — what we chose.
   - **Consequences** — trade-offs, what it enables, what to revisit later.
-- Before re-opening a settled question, check `docs/decisions/` first — if it's
+- Before re-opening a settled question, check `docs/adr/` first — if it's
   already decided, don't re-litigate it unless something material has changed.
 - When you make a decision worth recording, write the ADR as part of the same PR.
 
