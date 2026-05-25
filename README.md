@@ -73,7 +73,10 @@ uvicorn app.main:app --reload
 | OpenRouter | `https://openrouter.ai/api/v1` | `meta-llama/llama-3.3-70b-instruct` | Pay-per-use |
 | vLLM / LM Studio | `http://localhost:8000/v1` | any GGUF | Free (local) |
 
-All backends use the same OpenAI-compatible `/v1/chat/completions` interface.
+All backends use the same OpenAI-compatible `/v1/chat/completions` interface. The app
+requests `response_format={"type":"json_object"}` (JSON mode) to reduce parsing errors.
+Groq supports this for `llama-3.3-70b-versatile`. If your backend doesn't, the app falls
+back to fence-stripping the raw response — so it still works, just less reliably.
 
 ---
 
@@ -84,7 +87,7 @@ All backends use the same OpenAI-compatible `/v1/chat/completions` interface.
 | `GET` | `/investors` | List all tracked celebrity investors |
 | `GET` | `/investors/{id}/snapshot` | Latest 13F holdings (top 25) |
 | `GET` | `/investors/{id}/diff` | Q/Q portfolio changes |
-| `GET` | `/investors/{id}/signals` | AI trading signals (local LLM via Ollama) |
+| `GET` | `/investors/{id}/signals` | AI trading signals (any configured LLM backend) |
 | `GET` | `/investors/{id}/clone?capital=50000` | Proportional clone allocation |
 
 **Investor IDs:** `berkshire` · `ark_invest` · `pershing_square` · `third_point` · `appaloosa` · `soros_fund` · `baupost` · `tiger_global` · `druckenmiller` · `renaissance`
@@ -125,6 +128,15 @@ curl http://localhost:8000/investors/berkshire/signals
 | [SEC EDGAR](https://www.sec.gov/developer) | 13F filings (XML) | Free |
 | [Yahoo Finance RSS](https://finance.yahoo.com) | News headlines per ticker | Free |
 | [Ollama](https://ollama.com) / any OpenAI-compatible backend | Signal generation | Free (local) |
+
+---
+
+## Running Tests
+
+```bash
+pip install -e ".[dev]"        # installs pytest
+python -m pytest tests/ -v
+```
 
 ---
 
