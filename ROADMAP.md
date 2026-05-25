@@ -1,7 +1,7 @@
 # EchoTrade AI — Roadmap (current state + next)
 
 > Reflects what's actually built. The detailed spec for the next chunk lives in
-> `plan.md`. See `docs/decisions/` for the *why* behind big calls, `docs/architecture.md`
+> `plan.md`. See `docs/adr/` for the *why* behind big calls, `docs/architecture.md`
 > for the live system picture, and `CLAUDE.md` for how we work.
 
 ## North star
