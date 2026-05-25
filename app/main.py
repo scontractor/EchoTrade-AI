@@ -5,7 +5,7 @@ Endpoints:
   GET /investors                           List celebrity investors
   GET /investors/{id}/snapshot             Latest 13F holdings
   GET /investors/{id}/diff                 Q/Q portfolio changes
-  GET /investors/{id}/signals              AI trading signals (requires ANTHROPIC_API_KEY)
+  GET /investors/{id}/signals              AI trading signals (requires LLM backend — see .env.example)
   GET /investors/{id}/clone?capital=50000  Proportional clone allocation
 
   POST /insiders/ingest/{ticker}           Ingest Form 4 filings for a ticker
@@ -219,7 +219,7 @@ async def get_insider_trades(
 @app.get("/insiders/{ticker}/signal", response_model=InsiderSignal)
 async def get_insider_signal(
     ticker: str,
-    with_ai: bool = Query(False, description="Append Claude commentary to the signal"),
+    with_ai: bool = Query(False, description="Append LLM narrative to the signal"),
 ):
     """
     Score insider activity for a ticker.
