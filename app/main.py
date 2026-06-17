@@ -30,6 +30,7 @@ from app.insiders.scorer import score_trades
 from app.portfolio.diff import clone_portfolio, compute_diff
 from app.portfolio.models import CloneOut, DiffOut, PortfolioAnalysis, SnapshotOut, HoldingOut
 from app.sentiment.analyzer import analyze_tickers
+from app.prices import fetch_prices
 from app.signals.analyst import AIAnalyst
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s  %(name)s  %(message)s")
@@ -192,6 +193,16 @@ async def clone(
         strategy=f"Proportional top-{top_n} holdings replication",
         allocations=allocations,
     )
+
+
+# ── Market prices ────────────────────────────────────────────────────────────
+
+@app.get("/prices")
+async def get_prices():
+    """Delayed market prices (~15-min) for the ticker tape, sourced from Yahoo Finance."""
+    import asyncio
+    loop = asyncio.get_event_loop()
+    return await loop.run_in_executor(None, fetch_prices)
 
 
 # ── Insider trades (Form 4) ───────────────────────────────────────────────────
