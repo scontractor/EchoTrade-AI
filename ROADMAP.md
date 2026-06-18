@@ -5,9 +5,9 @@
 > for the live system picture, and `CLAUDE.md` for how we work.
 
 ## North star
-A "smart money" tracker: follow funds, institutions, and insiders via SEC filings,
-see what they buy/sell with honest per-source timeliness, get notified on filings you
-care about, and backtest your own portfolio against theirs.
+A StockUnlock-style smart money tracker: follow any fund or insider via SEC filings,
+track your own portfolio against theirs, get notified on new filings, and surface
+AI-generated signals — all with honest per-source data freshness.
 
 ## Guiding principles
 - Honesty about data freshness is a feature (Form 4 ≈ 2 days/exact; 13D ≈ 5 days;
@@ -39,22 +39,32 @@ care about, and backtest your own portfolio against theirs.
 - **Real delayed prices** — ticker tape replaced with ~15-min delayed Yahoo Finance
   prices via yfinance. Refreshes every 60s; honest "DELAYED" label. 13/13 tests passing.
 
-## NEXT — pick the order based on learn-vs-ship mood
+## NEXT
 
-### A. Make it solid (learning-heavy)
-- Add more tests on the pure-logic modules (diff engine, Form 4 scorer).
+### Phase 1 — Auth foundation (active next chunk)
+- **Supabase auth** — Google/GitHub login; JWT validation on protected FastAPI routes.
+- **SQLite → Postgres** via Supabase (ADR 0002). User, watchlist, and portfolio tables.
+- **Per-user watchlist** — save/remove investors; persisted per account.
+- **Dynamic investor search** — search any 13F filer by name via SEC EDGAR search API;
+  removes the hardcoded 4-investor limit.
 
-### C. Then multi-user (the migration trigger)
-- **Auth + accounts via Supabase** (Google/GitHub + email + 2FA) and migrate
-  SQLite → Postgres (ADR 0002). Closes the open API. Unlocks per-user saved data.
-- User portfolio + backtesting vs entities (enter at filing date — no lookahead bias).
-- Bidirectional filing notifications (timely for Form 4/13D; quarterly-diff for 13F).
+### Phase 2 — Portfolio
+- User enters holdings (ticker + shares + cost basis).
+- Track current value via yfinance prices (already have the feed).
+- Compare portfolio performance vs tracked investors.
+
+### Phase 3 — Metrics & discovery
+- **Stock metrics page** — P/E, market cap, revenue, earnings via yfinance fundamentals.
+- **Investor metrics** — AUM over time, sector breakdown, concentration score.
+- **Universal search bar** — stocks + investors from one input.
+- **Filing notifications** — alert on new Form 4 / 13F filings for watched entities.
 
 ## Backlog
-- Upgrade sentiment beyond TextBlob (e.g. finance-tuned model).
+- Upgrade sentiment beyond TextBlob (e.g. finance-tuned open model).
 - Consensus/crowding view, conflict detection, cost-basis & P&L, full clone workflow,
   per-fund concentration/sector breakdown.
-- LLM-as-a-judge to validate AI outputs.
+- Backtesting vs investors (enter at filing date — no lookahead bias).
+- LLM-as-a-judge to validate AI signal outputs.
 
 ---
 
@@ -84,8 +94,10 @@ care about, and backtest your own portfolio against theirs.
   teach CI/CD.
 
 ### Auth & security
-- Supabase auth + SQLite→Postgres migration (ADR 0002) teaches OAuth, sessions, 2FA,
-  and closing an open API — triggered when we add multi-user.
+- **Phase 1** (next): Supabase auth + SQLite→Postgres migration (ADR 0002) teaches
+  OAuth (how "login with Google" works), JWTs (the token sent on every request),
+  and closing an open API.
+- **Phase 3**: Filing notifications teach webhooks and background job patterns.
 
 ### Testing
 - Tests on pure-logic modules (diff engine, Form 4 scorer) teach test structure and
