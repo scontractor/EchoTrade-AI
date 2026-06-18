@@ -6,6 +6,12 @@ interface Props {
   investors: InvestorMeta[];
 }
 
+interface PriceItem {
+  sym: string;
+  price: number | null;
+  chg_pct: number | null;
+}
+
 function Clock() {
   const [time, setTime] = useState(new Date());
   useEffect(() => {
@@ -20,28 +26,42 @@ function Clock() {
   );
 }
 
-const TAPE_ITEMS = [
-  { sym: 'AAPL',  base: 225, chg:  0.34 },
-  { sym: 'MSFT',  base: 414, chg: -0.12 },
-  { sym: 'NVDA',  base: 138, chg:  1.87 },
-  { sym: 'AMZN',  base: 198, chg:  0.56 },
-  { sym: 'META',  base: 585, chg:  0.91 },
-  { sym: 'GOOGL', base: 177, chg: -0.23 },
-  { sym: 'BRK.B', base: 457, chg:  0.08 },
-  { sym: 'TSM',   base: 175, chg:  2.14 },
-  { sym: 'TSLA',  base: 176, chg: -1.42 },
-  { sym: 'JPM',   base: 246, chg:  0.33 },
-  { sym: 'V',     base: 338, chg:  0.17 },
-  { sym: 'UNH',   base: 298, chg: -0.77 },
-  { sym: 'XOM',   base: 108, chg:  0.49 },
-  { sym: 'BAC',   base: 43,  chg:  0.22 },
-  { sym: 'WMT',   base: 97,  chg:  0.05 },
-  { sym: 'HD',    base: 342, chg: -0.38 },
-  { sym: 'CVX',   base: 155, chg:  0.61 },
-  { sym: 'MRK',   base: 95,  chg: -0.54 },
+const FALLBACK: PriceItem[] = [
+  { sym: 'AAPL',  price: null, chg_pct: null },
+  { sym: 'MSFT',  price: null, chg_pct: null },
+  { sym: 'NVDA',  price: null, chg_pct: null },
+  { sym: 'AMZN',  price: null, chg_pct: null },
+  { sym: 'META',  price: null, chg_pct: null },
+  { sym: 'GOOGL', price: null, chg_pct: null },
+  { sym: 'BRK.B', price: null, chg_pct: null },
+  { sym: 'TSM',   price: null, chg_pct: null },
+  { sym: 'TSLA',  price: null, chg_pct: null },
+  { sym: 'JPM',   price: null, chg_pct: null },
+  { sym: 'V',     price: null, chg_pct: null },
+  { sym: 'UNH',   price: null, chg_pct: null },
+  { sym: 'XOM',   price: null, chg_pct: null },
+  { sym: 'BAC',   price: null, chg_pct: null },
+  { sym: 'WMT',   price: null, chg_pct: null },
+  { sym: 'HD',    price: null, chg_pct: null },
+  { sym: 'CVX',   price: null, chg_pct: null },
+  { sym: 'MRK',   price: null, chg_pct: null },
 ];
 
 export default function TopBar({ investors }: Props) {
+  const [prices, setPrices] = useState<PriceItem[]>(FALLBACK);
+
+  useEffect(() => {
+    const load = () => {
+      fetch('/api/prices')
+        .then(r => r.ok ? r.json() : Promise.reject())
+        .then(setPrices)
+        .catch(() => {}); // keep showing previous prices on error
+    };
+    load();
+    const id = setInterval(load, 60_000);
+    return () => clearInterval(id);
+  }, []);
+
   return (
     <div
       className="flex-shrink-0 border-b border-t-border bg-[#07080b] flex items-center"
@@ -67,19 +87,25 @@ export default function TopBar({ investors }: Props) {
         </span>
       </div>
 
-      {/* Ticker tape — static demo prices, not a live feed */}
+      {/* Ticker tape — ~15-min delayed prices from Yahoo Finance */}
       <div className="ticker-wrap flex-1 mx-2 overflow-hidden">
         <div className="ticker-inner">
           <span className="inline-flex items-center mr-6 text-2xs text-t-muted tracking-wider flex-shrink-0">
-            DEMO PRICES
+            DELAYED
           </span>
-          {[...TAPE_ITEMS, ...TAPE_ITEMS].map((t, i) => (
+          {[...prices, ...prices].map((t, i) => (
             <span key={i} className="inline-flex items-center gap-1.5 mr-8 text-2xs">
               <span className="text-t-orange font-bold tracking-wide">{t.sym}</span>
-              <span className="num text-t-text">{t.base.toFixed(2)}</span>
-              <span className={t.chg >= 0 ? 'text-t-green' : 'text-t-red'}>
-                {t.chg >= 0 ? '+' : ''}{t.chg.toFixed(2)}%
-              </span>
+              {t.price != null ? (
+                <>
+                  <span className="num text-t-text">{t.price.toFixed(2)}</span>
+                  <span className={t.chg_pct != null && t.chg_pct >= 0 ? 'text-t-green' : 'text-t-red'}>
+                    {t.chg_pct != null ? `${t.chg_pct >= 0 ? '+' : ''}${t.chg_pct.toFixed(2)}%` : ''}
+                  </span>
+                </>
+              ) : (
+                <span className="text-t-muted">---</span>
+              )}
             </span>
           ))}
         </div>
