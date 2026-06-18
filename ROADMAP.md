@@ -34,18 +34,15 @@ care about, and backtest your own portfolio against theirs.
 - **Honest UI labels** — DEMO/AI status pills, "DEMO PRICES" ticker tape prefix.
 - **13F snapshot cache** — transparent read-through, keyed on accession_number,
   `filing_snapshots` table in `echotrade.db`. Repeat requests <100ms (ADR 0005).
+- **Deployed** — FastAPI backend on Render, React frontend on Vercel with `/api/*`
+  rewrites. Auto-deploys on merge to main (ADR 0006).
+- **Real delayed prices** — ticker tape replaced with ~15-min delayed Yahoo Finance
+  prices via yfinance. Refreshes every 60s; honest "DELAYED" label. 13/13 tests passing.
 
 ## NEXT — pick the order based on learn-vs-ship mood
 
 ### A. Make it solid (learning-heavy)
-- Replace mock ticker tape with a **real (likely delayed) price feed** (e.g. yfinance).
-  Removes the last "dishonest" element; teaches external data integration.
 - Add more tests on the pure-logic modules (diff engine, Form 4 scorer).
-
-### B. Make it shippable (shipping-heavy)
-- **Deploy a read-only public demo** (no user data, so no auth needed yet) — frontend
-  to Vercel, FastAPI to a Python host (Railway/Render/Fly). See ADR 0004. This gets
-  something live fast and teaches deployment/CI.
 
 ### C. Then multi-user (the migration trigger)
 - **Auth + accounts via Supabase** (Google/GitHub + email + 2FA) and migrate
