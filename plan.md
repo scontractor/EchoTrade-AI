@@ -3,31 +3,38 @@
 > **This chunk shipped.** See `ROADMAP.md` for what's next.
 > See `docs/architecture.md` for the live system, `CLAUDE.md` for how we work.
 
-## What we just shipped (real delayed prices + deployment)
+## What we just shipped (test coverage + a bug it caught)
 
-✅ `app/prices.py` — fetch_prices() calls yfinance for 18 symbols, returns
-   [{sym, price, chg_pct}]. BRK.B mapped to BRK-B (Yahoo convention).
-   Runs in a thread executor (same pattern as Form 4 routes).
+✅ `tests/test_diff.py` — 6 tests on `compute_diff` / `clone_portfolio`
+   (`app/portfolio/diff.py`): all 5 action types, the ±5% unchanged
+   boundary, two divide-by-zero edge cases (zero previous shares, an
+   investor's first-ever 13F), proportional allocation.
 
-✅ `GET /prices` route in `app/main.py` — confirmed returning live data.
+✅ `tests/test_scorer.py` — 7 tests on `score_trades`
+   (`app/insiders/scorer.py`): no-trades placeholder, high-conviction
+   officer buy, 10b5-1 plan sale flagged as noise, cluster detection,
+   plus 2 regression tests added after the fix below.
 
-✅ `frontend/src/components/TopBar.tsx` — fetches /api/prices on mount,
-   refreshes every 60s, shows '---' gracefully on null, label: 'DELAYED'.
+✅ Bug found while testing, fixed same session — `conviction` was floored
+   at 0.0 *before* the SELL/STRONG_SELL thresholds were checked, so
+   heavy insider selling always resolved to NEUTRAL. Fixed by keeping
+   `raw_score` signed for the direction decision and only taking the
+   unsigned magnitude for the displayed `conviction_score`. No frontend
+   change needed — `InsiderPanel.tsx` already had SELL/STRONG_SELL
+   styling wired up, just unreachable.
 
-✅ Tests — 4 pytest cases for prices (happy path, null price, per-symbol
-   failure isolation, total batch failure). 13/13 total passing.
-
-✅ Deployed — FastAPI on Render (echotrade-ai.onrender.com), React on Vercel
-   with /api/* rewrites to Render. Auto-deploys on merge to main.
+✅ PR #6 (tests) + PR #7 (fix, stacked on #6) — both merged to main.
+   26/26 tests passing.
 
 ## Next — pick from ROADMAP.md
 
-**A. More tests** (solid-heavy)
-Tests on diff engine and Form 4 scorer — the pure-logic modules that
-have no test coverage yet. Teaches test structure and edge cases.
+**A. Phase 1 — Auth foundation** (the roadmap's "active next chunk")
+Supabase auth (Google/GitHub login), SQLite → Postgres migration,
+per-user watchlists, dynamic investor search. Architectural fork —
+needs a plan + your "go" before any code per CLAUDE.md.
 
-**B. Auth + Postgres** (multi-user trigger)
-Supabase auth + SQLite → Postgres migration. Only makes sense once
-there's something worth protecting behind a login.
+**B. Something else from the backlog**
+See ROADMAP.md's Backlog section (sentiment upgrade, consensus/crowding
+view, backtesting, LLM-as-a-judge).
 
 Spar in a side chat → distill into a new plan.md → branch → PR.

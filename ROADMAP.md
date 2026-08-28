@@ -38,6 +38,14 @@ AI-generated signals — all with honest per-source data freshness.
   rewrites. Auto-deploys on merge to main (ADR 0006).
 - **Real delayed prices** — ticker tape replaced with ~15-min delayed Yahoo Finance
   prices via yfinance. Refreshes every 60s; honest "DELAYED" label. 13/13 tests passing.
+- **Pure-logic test coverage** — 11 new tests for the diff engine (`compute_diff`,
+  `clone_portfolio`) and Form 4 scorer (`score_trades`): action classification,
+  the ±5% threshold, divide-by-zero edge cases, cluster detection.
+- **Fixed unreachable SELL/STRONG_SELL signal** — `score_trades` floored conviction
+  at 0.0 before checking the sell thresholds, so heavy insider selling always
+  showed as NEUTRAL. Now signed direction + unsigned magnitude are decoupled;
+  no frontend change needed (styling/bar already existed, just dead code). 26/26
+  tests passing.
 
 ## NEXT
 
