@@ -79,6 +79,42 @@ def test_10b51_plan_sale_is_flagged_as_reduced_weight():
     assert "reduced weight" in signal.rationale
 
 
+def test_large_non_plan_ceo_sale_is_strong_sell():
+    # Regression: conviction used to be floored at 0.0 before the signal_type
+    # thresholds were checked, so STRONG_SELL/SELL were unreachable dead code —
+    # every net-sell trade resolved to NEUTRAL regardless of size.
+    trade = _trade(
+        owner_name="CEO Jane",
+        officer_title="Chief Executive Officer",
+        owner_is_officer=True,
+        transaction_code="S",
+        is_10b51_plan=False,
+        total_value=6_000_000.0,
+    )
+
+    signal = score_trades([trade])
+
+    assert signal.signal_type == "STRONG_SELL"
+    assert signal.conviction_score > 0  # magnitude is always unsigned/positive
+    assert "Non-plan sale" in signal.rationale
+
+
+def test_moderate_non_plan_sale_is_sell():
+    trade = _trade(
+        owner_name="Director Bob",
+        officer_title="Director of Sales",
+        owner_is_officer=True,
+        transaction_code="S",
+        is_10b51_plan=False,
+        total_value=150_000.0,
+    )
+
+    signal = score_trades([trade])
+
+    assert signal.signal_type == "SELL"
+    assert signal.conviction_score > 0
+
+
 def test_cluster_buying_across_two_insiders_boosts_conviction():
     alice = _trade(owner_name="Alice", transaction_date="2026-08-01", total_value=200_000.0)
     bob = _trade(owner_name="Bob", transaction_date="2026-08-02", total_value=200_000.0)
