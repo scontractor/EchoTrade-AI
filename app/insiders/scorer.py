@@ -9,11 +9,16 @@ Scoring philosophy:
   - Cluster Buying (≥2 distinct insiders buying the same ticker within 48 hours) amplifies signal.
 
 Signal scale:
-  STRONG_BUY  conviction ≥ 7.0
-  BUY         conviction ≥ 4.0
-  NEUTRAL     conviction ≥ 1.5
-  SELL        conviction ≥ 0.5 (net disposition)
-  STRONG_SELL conviction < 0.5
+  A trade's contribution is signed (buys positive, sells negative) and summed
+  into a net "raw score" that decides direction + strength:
+    STRONG_BUY   raw ≥ 7.0
+    BUY          raw ≥ 4.0
+    NEUTRAL      -1.5 < raw < 4.0
+    SELL         raw ≤ -1.5
+    STRONG_SELL  raw ≤ -4.0
+  conviction_score itself is always an unsigned 0-10 magnitude (|raw|, clamped)
+  so the UI can render it as a plain strength bar — pair it with signal_type
+  for direction.
 """
 
 from __future__ import annotations
@@ -145,21 +150,23 @@ def score_trades(trades: list[InsiderTrade]) -> InsiderSignal:
         contribution = base * _value_score(t.total_value) * _role_multiplier(t)
         raw_score += contribution
 
-    # Normalise to 0–10
-    conviction = max(0.0, min(10.0, raw_score))
-
     cluster, cluster_desc = _detect_cluster(trades)
     if cluster:
-        conviction = min(10.0, conviction * 1.3)  # Boost for cluster
+        raw_score *= 1.3  # Boost for cluster buying
         rationale_parts.insert(0, cluster_desc or "")
 
-    if conviction >= 7.0:
+    # Keep the sign — it's what tells a net-sell apart from no signal at all —
+    # and only clamp the magnitude to +/-10.
+    raw_score = max(-10.0, min(10.0, raw_score))
+    conviction = round(abs(raw_score), 2)
+
+    if raw_score >= 7.0:
         signal_type = "STRONG_BUY"
-    elif conviction >= 4.0:
+    elif raw_score >= 4.0:
         signal_type = "BUY"
-    elif conviction <= -4.0:
+    elif raw_score <= -4.0:
         signal_type = "STRONG_SELL"
-    elif conviction <= -1.5:
+    elif raw_score <= -1.5:
         signal_type = "SELL"
     else:
         signal_type = "NEUTRAL"
@@ -172,7 +179,7 @@ def score_trades(trades: list[InsiderTrade]) -> InsiderSignal:
     return InsiderSignal(
         ticker=ticker,
         signal_type=signal_type,
-        conviction_score=round(conviction, 2),
+        conviction_score=conviction,
         rationale=" | ".join(rationale_parts[:5]) or "Mixed / routine transactions.",
         trades=trade_outs,
         cluster_detected=cluster,
